@@ -6,7 +6,7 @@ code by Jeff Minucci
 
 import os
 import pandas as pd
-from Tools import InputWriter, ModelCaller, OutputReader
+from .Tools import InputWriter, ModelCaller, OutputReader
 
 class VarroaPop():
 
@@ -24,19 +24,23 @@ class VarroaPop():
         '''
 
         #check file paths
-        exe = os.path.abspath('files/exe/VarroaPop.exe')
-        vrp = os.path.abspath('files/exe/default.vrp')
+        parent = os.path.dirname(os.path.abspath(__file__))
+        exe = os.path.join(parent, 'files/exe/VarroaPop.exe')
+        print(exe)
+        vrp = os.path.join(parent,'files/exe/default.vrp')
+        #exe = os.path.abspath('.files/exe/VarroaPop.exe')
+        #vrp = os.path.abspath('.files/exe/default.vrp')
         if not os.path.isfile(exe):
             raise FileNotFoundError('VarroaPop executable ' + exe + ' does not exist!')
         if not os.path.isfile(exe):
             raise FileNotFoundError('VarroaPop session file ' + vrp + ' does not exist!')
         self.exe = exe
         self.vrp = vrp
-        self.in_path = os.path.abspath('files/input')
+        self.in_path = os.path.join(parent,'files/input')
         self.in_filename = 'vp_input.txt'
         self.input = os.path.join(self.in_path, self.in_filename)
-        self.log_path = os.path.abspath('files/logs')
-        self.out_path = os.path.abspath('files/output')
+        self.log_path = os.path.join(parent,'files/logs')
+        self.out_path = os.path.join(parent,'files/output')
         self.out_filename = 'vp_results.txt'
         self.logs = logs
         self.verbose = verbose
