@@ -7,6 +7,7 @@ code by Jeff Minucci
 import os
 import pandas as pd
 from .Tools import InputWriter, ModelCaller, OutputReader
+import json
 
 class VarroaPop():
 
@@ -116,7 +117,7 @@ class VarroaPop():
         :return: either a json string or a dataframe of the VarroaPop model output
         '''
         if json_str:
-            result = self.output.to_json(orient='columns')
+            result = json.dumps(self.output.to_dict(orient='list'))
         else:
             result = self.output
         return result
