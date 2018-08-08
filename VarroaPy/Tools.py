@@ -82,14 +82,14 @@ class ModelCaller:
     """
 
     def __init__(self,exe_file, vrp_file, in_file, out_path, out_filename = 'vp_results.txt',
-                 log_path = None, logs = False, verbose = False):
+                 log_path = None, log_filename = 'vp_log.txt', logs = False, verbose = False):
         self.exe = exe_file
         self.vrp = vrp_file
         self.input = in_file
         self.output_path = out_path
         self.out_filename = out_filename
         self.log_path = log_path
-        self.log_filename = 'vp_log.txt'
+        self.log_filename = log_filename
         self.logs = logs
         self.verbose = verbose
 
