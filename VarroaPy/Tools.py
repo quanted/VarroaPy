@@ -35,7 +35,8 @@ class InputWriter:
         self.filename = in_filename
         self.verbose = verbose
         self.weather_file = weather_file.lower()
-        weather_dir = os.path.join(os.path.abspath(__file__),"files/weather")
+        self.parent = os.path.dirname(os.path.abspath(__file__))
+        weather_dir = os.path.join(self.parent,"files/weather")
         self.weather_locs = {'columbus': os.path.join(weather_dir,'18815_grid_39.875_lat.wea'),
                              'sacramento': os.path.join(weather_dir,'17482_grid_38.375_lat.wea'),
                              'phoenix': os.path.join(weather_dir, '12564_grid_33.375_lat.wea'),

@@ -25,10 +25,10 @@ class VarroaPop():
         :return: Nothing
         '''
         #check file paths
-        parent = os.path.dirname(os.path.abspath(__file__))
-        exe = os.path.join(parent, 'files/exe/VarroaPop.exe')
+        self.parent = os.path.dirname(os.path.abspath(__file__))
+        exe = os.path.join(self.parent, 'files/exe/VarroaPop.exe')
         print(exe)
-        vrp = os.path.join(parent,'files/exe/default.vrp')
+        vrp = os.path.join(self.parent,'files/exe/default.vrp')
         #exe = os.path.abspath('.files/exe/VarroaPop.exe')
         #vrp = os.path.abspath('.files/exe/default.vrp')
         if not os.path.isfile(exe):
@@ -47,10 +47,10 @@ class VarroaPop():
             self.in_filename = 'vp_input.txt'
             self.log_filename = 'vp_log.txt'
             self.out_filename = 'vp_results.txt'
-        self.in_path = os.path.join(parent,'files/input')
+        self.in_path = os.path.join(self.parent,'files/input')
         self.input = os.path.join(self.in_path, self.in_filename)
-        self.log_path = os.path.join(parent,'files/logs')
-        self.out_path = os.path.join(parent,'files/output')
+        self.log_path = os.path.join(self.parent,'files/logs')
+        self.out_path = os.path.join(self.parent,'files/output')
         self.logs = logs
         self.verbose = verbose
         if parameters is not None:
