@@ -18,7 +18,7 @@ class InputWriter:
     Takes a named dictionary of VarroaPop input parameters. Also requires the path to where you want to write the file.
     """
 
-    def __init__(self, params, in_path = os.path.abspath("files/input"), in_filename = 'vp_input.txt',
+    def __init__(self, params, in_path = os.path.join(os.path.abspath(__file__),"files/input"), in_filename = 'vp_input.txt',
                  weather_file = 'Columbus', verbose = False):
         """
         Creates an InputWriter object. Takes params, a named dictionary of VarroaPop inputs.
@@ -35,14 +35,14 @@ class InputWriter:
         self.filename = in_filename
         self.verbose = verbose
         self.weather_file = weather_file.lower()
-        weather_dir = 'files/weather/'
-        self.weather_locs = {'columbus': os.path.abspath(weather_dir + '18815_grid_39.875_lat.wea'),
-                             'sacramento': os.path.abspath(weather_dir + '17482_grid_38.375_lat.wea'),
-                             'phoenix': os.path.abspath(weather_dir + '12564_grid_33.375_lat.wea'),
-                             'yakima': os.path.abspath(weather_dir + '25038_grid_46.375_lat.wea'),
-                             'eau claire': os.path.abspath(weather_dir + '23503_grid_44.875_lat.wea'),
-                             'jackson': os.path.abspath(weather_dir + '11708_grid_32.375_lat.wea'),
-                             'durham': os.path.abspath(weather_dir + '15057_grid_35.875_lat.wea')}
+        weather_dir = os.path.join(os.path.abspath(__file__),"files/weather")
+        self.weather_locs = {'columbus': os.path.join(weather_dir,'18815_grid_39.875_lat.wea'),
+                             'sacramento': os.path.join(weather_dir,'17482_grid_38.375_lat.wea'),
+                             'phoenix': os.path.join(weather_dir, '12564_grid_33.375_lat.wea'),
+                             'yakima': os.path.join(weather_dir, '25038_grid_46.375_lat.wea'),
+                             'eau claire': os.path.join(weather_dir, '23503_grid_44.875_lat.wea'),
+                             'jackson': os.path.join(weather_dir, '11708_grid_32.375_lat.wea'),
+                             'durham': os.path.join(weather_dir, '15057_grid_35.875_lat.wea')}
         if self.weather_file in self.weather_locs.keys():
             self.weather_file = self.weather_locs[self.weather_file]
 
