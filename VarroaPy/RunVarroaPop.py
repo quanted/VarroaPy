@@ -74,7 +74,8 @@ class VarroaPop():
         '''
         if not isinstance(parameters, dict):
             raise TypeError('parameters must be a named dictionary of VarroaPop parameters')
-        self.parameters = parameters
+        old_parameters = self.parameters
+        self.parameters = {**old_parameters, **parameters}
         if weather_file is not None:
             self.weather = weather_file
 
