@@ -17,7 +17,7 @@ You must also have the **pandas** package installed in python.
 4. **Create a VarroaPop object**, using a dictionary of parameters (parameter_name: value), and a weather file option.
 
 
-        params = {"ICAdultWorkers": 10000, "ICAdultBrood": 8000, "SimStart": "04/13/2015", "SimEnd": "09/15/2015"}
+        params = {"ICWorkerAdults": 10000, "ICWorkerBrood": 8000, "SimStart": "04/13/2015", "SimEnd": "09/15/2015"}
         weather = "Columbus"
         vp = VarroaPop(parameters= params, weather_file = weather)
      
@@ -41,8 +41,8 @@ You must also have the **pandas** package installed in python.
 7. You can give new parameters and/or update previously set ones (and optionally set a new weather file), and then run the model again. Parameters that were previously defined will remain set
 
     ```
-    params_new = {"ICAdultWorkers": 22200, "InitColPollen": 4000}
-    #Updates value for ICAdultWorkers, new value for InitColPollen, other values set previously remain the same.
+    params_new = {"ICWorkerAdults": 22200, "InitColPollen": 4000}
+    #Updates value for ICWorkerAdults, new value for InitColPollen, other values set previously remain the same.
     vp.set_parameters(parameters = params_new, weather_file = "Yakima")
     vp.run_model()
     ```
