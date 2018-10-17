@@ -1,9 +1,3 @@
-#ignore VarroaPy temporary files
-VarroaPy/files/input/*
-VarroaPy/files/output/*
-VarroaPy/files/logs/*
-
-
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

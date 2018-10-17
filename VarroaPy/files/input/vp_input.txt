@@ -1,0 +1,6 @@
+ICAdultWorkers=13333
+ICAdultBrood=8000
+SimStart=04/13/2015
+SimEnd=09/15/2015
+InitColPollen=1338
+WeatherFileName=D:\Git_files\VarroaPyServer\VarroaPy\VarroaPy\files/weather\18815_grid_39.875_lat.wea
