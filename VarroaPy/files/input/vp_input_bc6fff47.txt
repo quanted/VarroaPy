@@ -1,2 +1,0 @@
-ICDroneBrood=344
-WeatherFileName=D:\Git_files\VarroaPyServer\VarroaPy\VarroaPy\files/weather\18815_grid_39.875_lat.wea

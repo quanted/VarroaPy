@@ -1,2 +1,0 @@
-ICDroneBrood=444
-WeatherFileName='columbus'

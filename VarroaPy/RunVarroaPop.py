@@ -12,7 +12,7 @@ import uuid
 
 class VarroaPop():
 
-    def __init__(self, parameters = None, weather_file = 'Columbus', logs = False, verbose = True, save = False):
+    def __init__(self, parameters = None, weather_file = 'Columbus', logs = False, verbose = True, unique = True, keep_files = False):
         '''
         Initialize a VarroaPop model object
 
@@ -21,13 +21,14 @@ class VarroaPop():
             one of either 'Columbus' (default), 'Sacramento', 'Phoenix', 'Yakima', 'Eau Claire', 'Jackson', or 'Durham'
         :param logs: True or false, create a log file?
         :param verbose: True or false, print messages?
+        :param unique: True or false, give input and results files unique IDs?
+        :param keep_files: True or false, save files or delete them?
 
         :return: Nothing
         '''
         #check file paths
         self.parent = os.path.dirname(os.path.abspath(__file__))
         exe = os.path.join(self.parent, 'files/exe/VarroaPop.exe')
-        print(exe)
         vrp = os.path.join(self.parent,'files/exe/default.vrp')
         #exe = os.path.abspath('.files/exe/VarroaPop.exe')
         #vrp = os.path.abspath('.files/exe/default.vrp')
@@ -37,7 +38,9 @@ class VarroaPop():
             raise FileNotFoundError('VarroaPop session file ' + vrp + ' does not exist!')
         self.exe = exe
         self.vrp = vrp
-        if save:
+        self.unique = unique
+        self.keep_files = keep_files
+        if self.unique:
             self.jobID = uuid.uuid4().hex[0:8]     #generate random jobID
             self.in_filename = 'vp_input_' + self.jobID + '.txt'
             self.log_filename = 'vp_log_' + self.jobID + '.txt'
@@ -118,6 +121,8 @@ class VarroaPop():
         reader = OutputReader(out_path= self.out_path, out_filename= self.out_filename)
         output = reader.read()
         self.output = output
+        if not self.keep_files:
+            self.delete_files()
         return output
 
 
@@ -136,6 +141,19 @@ class VarroaPop():
 
     def get_jobID(self):
         return self.jobID
+
+
+    def delete_files(self):
+        input = os.path.join(self.in_path, self.in_filename)
+        output = os.path.join(self.out_path, self.out_filename)
+        if os.path.exists(input):
+            os.remove(input)
+        if os.path.exists(output):
+            os.remove(output)
+        if self.logs:
+            logs = os.path.join(self.log_path, self.log_filename)
+            if os.path.exists(logs):
+                os.remove(logs)
 
 
 
