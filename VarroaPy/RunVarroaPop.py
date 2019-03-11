@@ -12,13 +12,15 @@ import uuid
 
 class VarroaPop():
 
-    def __init__(self, parameters = None, weather_file = 'Columbus', logs = False, verbose = True, unique = True, keep_files = False):
+    def __init__(self, parameters = None, weather_file = 'Columbus', vrp_file = None,
+                 logs = False, verbose = True, unique = True, keep_files = False):
         '''
         Initialize a VarroaPop model object
 
         :param parameters: named dictionary of VarroaPop input parameters and their values
         :param weather_file: Full path to the weather file e.g. C:/VarroaPop/weather.wea (must be .wea/.dvf/.wth) OR
             one of either 'Columbus' (default), 'Sacramento', 'Phoenix', 'Yakima', 'Eau Claire', 'Jackson', or 'Durham'
+        :param vrp_file: Full path to a custom vrp session file. If none, use the default file
         :param logs: True or false, create a log file?
         :param verbose: True or false, print messages?
         :param unique: True or false, give input and results files unique IDs?
@@ -29,7 +31,8 @@ class VarroaPop():
         #check file paths
         self.parent = os.path.dirname(os.path.abspath(__file__))
         exe = os.path.join(self.parent, 'files/exe/VarroaPop.exe')
-        vrp = os.path.join(self.parent,'files/exe/default.vrp')
+        if vrp_file is None:
+            vrp = os.path.join(self.parent,'files/exe/default.vrp')
         #exe = os.path.abspath('.files/exe/VarroaPop.exe')
         #vrp = os.path.abspath('.files/exe/default.vrp')
         if not os.path.isfile(exe):
