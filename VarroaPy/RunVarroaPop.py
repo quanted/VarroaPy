@@ -32,15 +32,15 @@ class VarroaPop():
         self.parent = os.path.dirname(os.path.abspath(__file__))
         exe = os.path.join(self.parent, 'files/exe/VarroaPop.exe')
         if vrp_file is None:
-            vrp = os.path.join(self.parent,'files/exe/default.vrp')
+            vrp_file = os.path.join(self.parent,'files/exe/default.vrp')
         #exe = os.path.abspath('.files/exe/VarroaPop.exe')
         #vrp = os.path.abspath('.files/exe/default.vrp')
         if not os.path.isfile(exe):
             raise FileNotFoundError('VarroaPop executable ' + exe + ' does not exist!')
-        if not os.path.isfile(exe):
-            raise FileNotFoundError('VarroaPop session file ' + vrp + ' does not exist!')
+        if not os.path.isfile(vrp_file):
+            raise FileNotFoundError('VarroaPop session file ' + vrp_file + ' does not exist!')
         self.exe = exe
-        self.vrp = vrp
+        self.vrp = vrp_file
         self.unique = unique
         self.keep_files = keep_files
         if self.unique:
