@@ -99,10 +99,10 @@ class ModelCaller:
         if self.logs:
             if self.log_path is None:
                 raise AttributeError('If logs = True, a log path must be specified')
-            command = self.exe + ' ' + self.vrp + ' /b /or ' + os.path.join(self.output_path,self.out_filename) + ' /i ' + self.input + ' /ol ' +\
-                      os.path.join(self.log_path,self.log_filename)
+            command = '"' + self.exe + '" "' + self.vrp + '" /b /or "' + os.path.join(self.output_path,self.out_filename) + '" /i "' + self.input + '" /ol "' +\
+                      os.path.join(self.log_path,self.log_filename) + '"'
         else:
-            command = self.exe + ' ' + self.vrp + ' /b /or ' + os.path.join(self.output_path,self.out_filename) + ' /i ' + self.input
+            command = '"' + self.exe + '" "' + self.vrp + '" /b /or "' + os.path.join(self.output_path,self.out_filename) + '" /i "' + self.input + '"' 
         if self.verbose:
             print(command)
         subprocess.call(command)
