@@ -1,6 +1,7 @@
 # VarroaPy
 Python-based wrapper for the VarroaPop+Pesticide bee colony model
 
+Developed by: Jeffrey Minucci
 <br><br>
 
 #### Quick Start guide: 
@@ -9,7 +10,7 @@ Python-based wrapper for the VarroaPop+Pesticide bee colony model
 You must also have the **pandas** package installed in python.
 
 
-2. **Clone this repo**, ideally into the directory where your python code will be.
+2. **Clone this repo**, ideally into the directory where your python code or project will be.
 
 3.  **Import the VarroaPop class** from  VarroaPy/VarroaPy/RunVarroaPop in python
     e.g. `from VarroaPy.VarroaPy.RunVarroaPop import VarroaPop`, if VarroaPy is cloned to the same directory that your python script is     in.
