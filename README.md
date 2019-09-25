@@ -6,7 +6,7 @@ Developed by: Jeffrey Minucci
 
 #### Quick Start guide: 
 
-1. **Requirements:** You must have **VarroaPop version 3.2.8.16** installed locally. To download VarroaPop from the USDA ARS, try [this link](https://www.ars.usda.gov/research/software/download/?softwareid=75), or contact crystalriverconsulting@gmail.com
+1. **Requirements:** You must have **VarroaPop version 3.2.8.16** installed locally. To download VarroaPop from the USDA ARS, try [this link](https://www.ars.usda.gov/research/software/download/?softwareid=75), or contact crystalriverconsulting@gmail.com. Or you can use the installer found in this repo at VarroaPy/VarroaPop/VarroaPopSetup.msi.
 You must also have the **pandas** package installed in python.
 
 
