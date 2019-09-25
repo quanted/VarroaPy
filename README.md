@@ -1,3 +1,6 @@
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.3461090.svg)](https://doi.org/10.5281/zenodo.3461090)
+
+
 # VarroaPy
 Python-based wrapper for the VarroaPop+Pesticide bee colony model
 
