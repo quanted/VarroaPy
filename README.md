@@ -10,7 +10,7 @@ Developed by: Jeffrey Minucci
 #### Quick Start guide: 
 
 1. **Requirements:** 
-    * You must have **VarroaPop version 3.2.8.16** installed locally. To download VarroaPop from the USDA ARS, try [this link](https://www.ars.usda.gov/research/software/download/?softwareid=75), or contact crystalriverconsulting@gmail.com. Or you can use the installer found in this repo at VarroaPy/VarroaPop/VarroaPopSetup.msi
+    * You must have **VarroaPop version 3.2.8.16** installed locally. To download VarroaPop from the USDA ARS, try [this link](https://www.ars.usda.gov/research/software/download/?softwareid=75), or contact crystalriverconsulting@gmail.com.
     * You must also have the **pandas** package installed in python.
 
 
@@ -29,7 +29,7 @@ Developed by: Jeffrey Minucci
 
         params = {"ICWorkerAdults": 10000, "ICWorkerBrood": 8000, "SimStart": "04/13/2015", "SimEnd": "09/15/2015"}
         weather = "Columbus"
-        vp = VarroaPop(parameters= params, weather_file = weather)
+        vp = VarroaPop(parameters = params, weather_file = weather)
      
     Note that weather can be a path to a valid .wea or .wth file, or one of the included base weather locations, which are:    "Columbus" (OH; default), "Sacramento", "Phoenix", "Yakima", "Eau Claire", "Jackson" (MS), or "Durham (NC)"
     
@@ -46,15 +46,15 @@ Developed by: Jeffrey Minucci
 
 6. Optionally, **read the output** into a python object, either as a pandas dataframe or a json string
     ```
-    output = vp.get_output() #pandas dataframe
-    output_json = vp.get_output(json_str= True) #json string
+    output = vp.get_output()  # pandas dataframe
+    output_json = vp.get_output(json_str= True)  # json string
     ```
     
 7. You can give new parameters and/or update previously set ones (and optionally set a new weather file), and then run the model again. Parameters that were previously defined will remain set
 
     ```
     params_new = {"ICWorkerAdults": 22200, "InitColPollen": 4000}
-    #Updates value for ICWorkerAdults, new value for InitColPollen, other values set previously remain the same.
+    # Updates value for ICWorkerAdults, new value for InitColPollen, other values set previously remain the same.
     vp.set_parameters(parameters = params_new, weather_file = "Yakima")
     vp.run_model()
     ```
