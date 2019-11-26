@@ -10,7 +10,7 @@ Developed by: Jeffrey Minucci
 #### Quick Start guide: 
 
 1. **Requirements:** 
-    * You must have **VarroaPop version 3.2.8.16** installed locally. To download VarroaPop from the USDA ARS, try [this link](https://www.ars.usda.gov/research/software/download/?softwareid=75), or contact crystalriverconsulting@gmail.com.
+    * You must have **VarroaPop+Pesticide version 3.2.8.16** installed locally. This software is not yet available to the public as it is under development and review by the USEPA and USDA.
     * You must also have the **pandas** package installed in python.
 
 
