@@ -21,7 +21,6 @@ class VarroaPop():
         :param weather_file: Full path to the weather file e.g. C:/VarroaPop/weather.wea (must be .wea/.dvf/.wth) OR
             one of either 'Columbus' (default), 'Sacramento', 'Phoenix', 'Yakima', 'Eau Claire', 'Jackson', or 'Durham'
         :param vrp_file: Full path to a custom vrp session file. If none, use the default file
-        :param logs: True or false, create a log file?
         :param verbose: True or false, print messages?
         :param unique: True or false, give input and results files unique IDs?
         :param keep_files: True or false, save files or delete them?
@@ -30,7 +29,7 @@ class VarroaPop():
         '''
         #check file paths
         self.parent = os.path.dirname(os.path.abspath(__file__))
-        exe = os.path.join(self.parent, 'files/exe/VarroaPop.exe')
+        exe = os.path.join(self.parent, 'files/exe/VarroaPop_rhel7')
         if vrp_file is None:
             vrp_file = os.path.join(self.parent,'files/exe/default.vrp')
         #exe = os.path.abspath('.files/exe/VarroaPop.exe')
@@ -55,9 +54,9 @@ class VarroaPop():
             self.out_filename = 'vp_results.txt'
         self.in_path = os.path.join(self.parent,'files/input')
         self.input = os.path.join(self.in_path, self.in_filename)
-        self.log_path = os.path.join(self.parent,'files/logs')
+        #self.log_path = os.path.join(self.parent,'files/logs')
         self.out_path = os.path.join(self.parent,'files/output')
-        self.logs = logs
+        #self.logs = logs
         self.verbose = verbose
         if parameters is not None:
             if not isinstance(parameters, dict):
@@ -110,13 +109,12 @@ class VarroaPop():
             raise Exception('Weather must be set before running VarroaPop!')
         #write the inputs
         writer = InputWriter(params = self.parameters, in_path =  self.in_path, in_filename= self.in_filename,
-                             weather_file = self.weather, verbose = self.verbose)
+                             verbose = self.verbose)
         writer.write_inputs()
 
         #run VarroaPop
         caller = ModelCaller(exe_file = self.exe, vrp_file = self.vrp, in_file = self.input, out_path= self.out_path,
-                             out_filename = self.out_filename,log_path= self.log_path, log_filename = self.log_filename,
-                             logs = self.logs, verbose = self.verbose)
+                             out_filename = self.out_filename, weather_file=self.weather_file, verbose = self.verbose)
         caller.run_VP()
 
         #read the results
