@@ -13,7 +13,8 @@ import uuid
 class VarroaPop():
 
     def __init__(self, parameters = None, weather_file = 'Columbus', vrp_file = None,
-                 logs = False, verbose = True, unique = True, keep_files = False):
+                 logs = False, verbose = True, unique = True, keep_files = False,
+                new_features = False):
         '''
         Initialize a VarroaPop model object
 
@@ -42,6 +43,7 @@ class VarroaPop():
         self.vrp = vrp_file
         self.unique = unique
         self.keep_files = keep_files
+        self.new_features = new_features
         if self.unique:
             self.jobID = uuid.uuid4().hex[0:8]     #generate random jobID
             self.in_filename = 'vp_input_' + self.jobID + '.txt'
@@ -62,7 +64,7 @@ class VarroaPop():
             if not isinstance(parameters, dict):
                 raise TypeError('parameters must be a named dictionary of VarroaPop parameters')
         self.parameters = parameters
-        self.weather = weather_file
+        self.weather_file = weather_file
         self.output = None
 
 
@@ -81,7 +83,7 @@ class VarroaPop():
             raise TypeError('parameters must be a named dictionary of VarroaPop parameters')
         self.parameters.update(parameters)
         if weather_file is not None:
-            self.weather = weather_file
+            self.weather_file = weather_file
 
 
     def set_weather(self, weather_file):
@@ -92,7 +94,7 @@ class VarroaPop():
             one of either 'Columbus' (default), 'Sacramento', 'Phoenix', 'Yakima', 'Eau Claire', 'Jackson', or 'Durham'
         :return: Nothing
         '''
-        self.weather = weather_file
+        self.weather_file = weather_file
 
 
     def run_model(self):
@@ -105,7 +107,7 @@ class VarroaPop():
         #check to see if parameters have been supplied
         if self.parameters is None:
             raise Exception('Parameters must be set before running VarroaPop!')
-        if self.weather is None:
+        if self.weather_file is None:
             raise Exception('Weather must be set before running VarroaPop!')
         #write the inputs
         writer = InputWriter(params = self.parameters, in_path =  self.in_path, in_filename= self.in_filename,
@@ -114,7 +116,8 @@ class VarroaPop():
 
         #run VarroaPop
         caller = ModelCaller(exe_file = self.exe, vrp_file = self.vrp, in_file = self.input, out_path= self.out_path,
-                             out_filename = self.out_filename, weather_file=self.weather_file, verbose = self.verbose)
+                             out_filename = self.out_filename, weather_file=self.weather_file, new_features = self.new_features,
+                             verbose = self.verbose)
         caller.run_VP()
 
         #read the results
@@ -150,10 +153,6 @@ class VarroaPop():
             os.remove(input)
         if os.path.exists(output):
             os.remove(output)
-        if self.logs:
-            logs = os.path.join(self.log_path, self.log_filename)
-            if os.path.exists(logs):
-                os.remove(logs)
 
 
 

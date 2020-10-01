@@ -34,19 +34,6 @@ class InputWriter:
         self.path = in_path
         self.filename = in_filename
         self.verbose = verbose
-        self.weather_file = weather_file.lower()
-        self.parent = os.path.dirname(os.path.abspath(__file__))
-        weather_dir = os.path.join(self.parent,"files/weather")
-        self.weather_locs = {'columbus': os.path.join(weather_dir,'18815_grid_39.875_lat.wea'),
-                             'sacramento': os.path.join(weather_dir,'17482_grid_38.375_lat.wea'),
-                             'phoenix': os.path.join(weather_dir, '12564_grid_33.375_lat.wea'),
-                             'yakima': os.path.join(weather_dir, '25038_grid_46.375_lat.wea'),
-                             'eau claire': os.path.join(weather_dir, '23503_grid_44.875_lat.wea'),
-                             'jackson': os.path.join(weather_dir, '11708_grid_32.375_lat.wea'),
-                             'durham': os.path.join(weather_dir, '15057_grid_35.875_lat.wea')}
-        if self.weather_file in self.weather_locs.keys():
-            self.weather_file = self.weather_locs[self.weather_file]
-
 
 
     def write_inputs(self):
@@ -56,9 +43,8 @@ class InputWriter:
         """
         if self.verbose:
             print("Printing input file to: {}".format(self.path))
-            print("Weather file location: {}".format(self.weather_file))
+            #print("Weather file location: {}".format(self.weather_file))
         inputs = ['{}={}'.format(key, value) for key, value in self.params.items()]
-        inputs = inputs + ['WeatherFileName='+self.weather_file]
         with open(os.path.join(self.path,self.filename), 'w') as file:
             for x in inputs:
                 file.write('{}\n'.format(x))
@@ -82,13 +68,14 @@ class ModelCaller:
     """
 
     def __init__(self,exe_file, vrp_file, in_file, out_path, out_filename = 'vp_results.txt',
-                 weather_file='durham', verbose = False):
+                 weather_file='durham', new_features=False, verbose = False):
         self.exe = exe_file
         self.vrp = vrp_file
         self.input = in_file
         self.output_path = out_path
         self.out_filename = out_filename
         self.weather_file = weather_file
+        self.new_features = new_features
         self.verbose = verbose
         self.parent = os.path.dirname(os.path.abspath(__file__))
         weather_dir = os.path.join(self.parent,"files/weather")
@@ -105,9 +92,24 @@ class ModelCaller:
     def run_VP(self):
         #command = '"' + self.exe + '" -v "' + self.vrp + '" -o "' + os.path.join(self.output_path,self.out_filename) + '" -i "' + self.input + '"' 
         command = self.exe + ' -f -v ' + self.vrp + ' -i ' + self.input + ' -o ' + os.path.join(self.output_path,self.out_filename) + ' -w ' + self.weather_file
+        if self.new_features:
+            command += ' --forageDayNoTemp --hourlyTemperaturesEstimation --foragersAlwaysAgeBasedOnForageInc --adultAgingBasedOnLaidEggs'  # diverges from win version
+            #command += ' --forageDayNoTemp --foragersAlwaysAgeBasedOnForageInc --adultAgingBasedOnLaidEggs'  # same results as above
+            #command += ' --foragersAlwaysAgeBasedOnForageInc --adultAgingBasedOnLaidEggs'  # same results as above
+            #command += ' --adultAgingBasedOnLaidEggs'  # matches win version
+            #command += ' --foragersAlwaysAgeBasedOnForageInc'  # this flag produces the divergence
+            #command +=  ' --forageDayNoTemp --hourlyTemperaturesEstimation --adultAgingBasedOnLaidEggs'  # matches win version
+            
+
+
         if self.verbose:
+            print("Weather file location: {} \n".format(self.weather_file))
             print(command)
-        subprocess.call(command)
+        #subprocess.call(command, shell=True)
+        #os.chmod(self.exe, 509)
+        result = subprocess.run(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
+        if self.verbose:
+            print(result.returncode, result.stdout, result.stderr)
 
 
 
@@ -136,5 +138,5 @@ class OutputReader:
 
         :return: a pandas dataframe of VP outputs (columns) by simulation date (rows)
         """
-        df = pd.read_table(self.out, delim_whitespace = True, header = None, names = self.outvar, skiprows = 6)
+        df = pd.read_csv(self.out, delim_whitespace = True, header = None, names = self.outvar, skiprows = 6)
         return df
