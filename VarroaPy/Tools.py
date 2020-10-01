@@ -119,12 +119,12 @@ class OutputReader:
     '''
 
     def __init__(self, out_path, out_filename = 'vp_results.txt'):
-        self.outvar =["Colony Size","Adult Drones","Adult Workers","Foragers", "Active Foragers", "Capped Drone Brood", "Capped Worker Brood",
+        self.outvar =["Date","Colony Size","Adult Drones","Adult Workers","Foragers", "Active Foragers", "Capped Drone Brood", "Capped Worker Brood",
              "Drone Larvae", "Worker Larvae", "Drone Eggs", "Worker Eggs", "Total Eggs", "DD", "L", "N", "P", "dd", "l", "n", "Free Mites", "Drone Brood Mites",
              "Worker Brood Mites", "Mites/Drone Cell", "Mites/Worker Cell", "Mites Dying", "Proportion Mites Dying",
              "Colony Pollen (g)", "Pollen Pesticide Concentration", "Colony Nectar", "Nectar Pesticide Concentration",
              "Dead Drone Larvae", "Dead Worker Larvae", "Dead Drone Adults", "Dead Worker Adults", "Dead Foragers",
-             "Queen Strength", "Average Temperature (celsius)", "Rain", "Min Temp", "Max Temp", "Daylight hours", "Forage Inc"]
+             "Queen Strength", "Average Temperature (celsius)", "Rain", "Min Temp", "Max Temp", "Daylight hours", "Forage Inc", "Forage Day"]
         self.out_path = out_path
         self.out_filename = out_filename
         self.out = os.path.join(self.out_path, self.out_filename)
@@ -135,5 +135,5 @@ class OutputReader:
 
         :return: a pandas dataframe of VP outputs (columns) by simulation date (rows)
         """
-        df = pd.read_csv(self.out, delim_whitespace = True, header = None, names = self.outvar, skiprows = 6)
+        df = pd.read_csv(self.out, delim_whitespace = True, header = None, names = self.outvar, skiprows = 6, index_col=0)
         return df
