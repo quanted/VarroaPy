@@ -13,7 +13,7 @@ import uuid
 class VarroaPop():
 
     def __init__(self, parameters = None, weather_file = 'Columbus', vrp_file = None,
-                 logs = False, verbose = True, unique = True, keep_files = False):
+                 logs = False, verbose = True, unique = True, keep_files = False, distro='rhel7'):
         '''
         Initialize a VarroaPop model object
 
@@ -29,7 +29,10 @@ class VarroaPop():
         '''
         #check file paths
         self.parent = os.path.dirname(os.path.abspath(__file__))
-        exe = os.path.join(self.parent, 'files/exe/VarroaPop_rhel7')
+        if distro == 'aws':
+            exe = os.path.join(self.parent, 'files/exe/VarroaPop_aws')
+        else:
+            exe = os.path.join(self.parent, 'files/exe/VarroaPop_rhel7')
         if vrp_file is None:
             vrp_file = os.path.join(self.parent,'files/exe/default.vrp')
         #exe = os.path.abspath('.files/exe/VarroaPop.exe')
