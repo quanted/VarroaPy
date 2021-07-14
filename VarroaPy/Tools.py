@@ -6,10 +6,16 @@
 
 
 
-import os
+import os, sys
+import ctypes
 import subprocess
 import pandas as pd
 
+def  StringList2CPA(theList):
+    theListBytes = []
+    for i in range(len(theList)):
+        theListBytes.append(bytes(theList[i], 'utf-8'))
+    return theListBytes
 
 class InputWriter:
     """
@@ -51,9 +57,9 @@ class InputWriter:
 
 
 
-class ModelCaller:
+class VPModelCaller:
     """
-    ModelCaller
+    VPModelCaller
 
     Class to run the VarroaPop executable
 
@@ -67,17 +73,21 @@ class ModelCaller:
 
     """
 
-    def __init__(self,exe_file, vrp_file, in_file, out_path, out_filename = 'vp_results.txt',
-                 weather_file='durham', new_features=False, verbose = False):
-        self.exe = exe_file
-        self.vrp = vrp_file
-        self.input = in_file
-        self.output_path = out_path
-        self.out_filename = out_filename
-        self.weather_file = weather_file
+    def __init__(self, lib_file, new_features=False, verbose = False):
+        #self.exe = exe_file
+        #self.vrp = vrp_file
+        #self.input = in_file
+        #self.output_path = out_path
+        #self.out_filename = out_filename
+        self.parameters = []
+        self.weather_file = None
+        self.contam_file = None
         self.new_features = new_features
         self.verbose = verbose
+        self.results = None
+        self.lib = ctypes.CDLL(lib_file)
         self.parent = os.path.dirname(os.path.abspath(__file__))
+        self.a = None
         weather_dir = os.path.join(self.parent,"files/weather")
         self.weather_locs = {'columbus': os.path.join(weather_dir,'18815_grid_39.875_lat.wea'),
                              'sacramento': os.path.join(weather_dir,'17482_grid_38.375_lat.wea'),
@@ -88,25 +98,129 @@ class ModelCaller:
                              'durham': os.path.join(weather_dir, '15057_grid_35.875_lat.wea')}
         if self.weather_file.lower() in self.weather_locs.keys():
             self.weather_file = self.weather_locs[self.weather_file.lower()]
+        if self.lib.InitializeModel():  # Initialize model
+            self.a = self.lib.InitializeModel()
+            if self.verbose:
+                print(self.a)
+                print('Model initialized')
+        else:
+            raise Exception('libvpop could not be initialized.')
+    
+    def clear_buffers(self):  
+        if self.lib.ClearResultsBuffer():  # Clear Results and weather lists
+            if self.verbose:
+                print('Results buffer cleared')
+        else :
+             raise Exception('Error clearing results buffer.')
+        if self.lib.ClearWeather():  # Clear weather
+            if self.verbose:
+                print('Weather Cleared')
+        else :
+            raise Exception('Error Clearing Weather')
+    
+    def load_input_file(self, in_file):
+        self.input_file = in_file
+        #Load the Initial Conditions
+        icf = open(self.input_file)
+        inputlist = icf.readlines()
+        icf.close()
+        CPA = (ctypes.c_char_p * len(inputlist))()
+        inputlist_bytes = StringList2CPA(inputlist)
+        CPA[:] = inputlist_bytes
+        if self.lib.SetICVariablesCPA(CPA, len(inputlist)):
+            if self.verbose:
+                print('Loaded parameters from file')
+        else:
+            raise Exception("Error loading parameters from file")
+    
+    def set_parameters(self, parameters):
+        if parameters is None:
+            return None
+        self.parameters.update(parameters)
+        inputlist = []
+        for k, v in self.parameters.items()
+            intputlist.append('{}={}'.format(k, v))
+        CPA = (ctypes.c_char_p * len(inputlist))()
+        inputlist_bytes = StringList2CPA(inputlist)
+        CPA[:] = inputlist_bytes
+        if self.lib.SetICVariablesCPA(CPA, len(inputlist)):
+            if self.verbose:
+                print('Set parameters')
+        else:
+            raise Exception("Error setting parameters")
+        return self.parameters
+            
+    def load_weather(self, weather_file='durham'):
+        self.weather_file = weather_file
+        weather_dir = os.path.join(self.parent,"files/weather")
+        self.weather_locs = {'columbus': os.path.join(weather_dir,'18815_grid_39.875_lat.wea'),
+                             'sacramento': os.path.join(weather_dir,'17482_grid_38.375_lat.wea'),
+                             'phoenix': os.path.join(weather_dir, '12564_grid_33.375_lat.wea'),
+                             'yakima': os.path.join(weather_dir, '25038_grid_46.375_lat.wea'),
+                             'eau claire': os.path.join(weather_dir, '23503_grid_44.875_lat.wea'),
+                             'jackson': os.path.join(weather_dir, '11708_grid_32.375_lat.wea'),
+                             'durham': os.path.join(weather_dir, '15057_grid_35.875_lat.wea')}
+        if self.weather_file.lower() in self.weather_locs.keys():
+            self.weather_file = self.weather_locs[self.weather_file.lower()]
+        wf = open(weatherpath)
+        weatherlines = wf.readlines()
+        wf.close()
+        CPA = (ctypes.c_char_p * len(weatherlines))()
+        weatherline_bytes = StringList2CPA(weatherlines) 
+        CPA[:] = weatherline_bytes
+        if self.lib.SetWeatherCPA(CPA, len(weatherlines)):
+            if self.verbose:
+                print('Loaded Weather')
+        else:
+            raise Exception("Error Loading Weather")
+    
+    def load_contam_file(self, contam_file):
+        self.contam_file = contam_file
+        ct = open(contam_file)
+        contamlines = ct.readlines()
+        ct.close()
+        CPA = (ctypes.c_char_p * len(contamlines))()
+        contamlines_bytes = StringList2CPA(contamlines)
+        CPA[:] = contamlines_bytes
+        if self.lib.SetContaminationTableCPA(CPA, len(contamlines)):
+            if verbose:
+                print('Loaded contamination file')
+        else:
+            raise Exception("Error loading contamination file")
 
     def run_VP(self):
-        #command = '"' + self.exe + '" -v "' + self.vrp + '" -o "' + os.path.join(self.output_path,self.out_filename) + '" -i "' + self.input + '"' 
-        command = self.exe + ' -f -v ' + self.vrp + ' -i ' + self.input + ' -o ' + os.path.join(self.output_path,self.out_filename) + ' -w ' + self.weather_file
-        if self.new_features:
-            command += ' --forageDayNoTemp --hourlyTemperaturesEstimation --foragersAlwaysAgeBasedOnForageInc --adultAgingBasedOnLaidEggs'  # diverges from win version
-            #command += ' --forageDayNoTemp --foragersAlwaysAgeBasedOnForageInc --adultAgingBasedOnLaidEggs'  # same results as above
-            #command += ' --foragersAlwaysAgeBasedOnForageInc --adultAgingBasedOnLaidEggs'  # same results as above
-            #command += ' --adultAgingBasedOnLaidEggs'  # matches win version
-            #command += ' --foragersAlwaysAgeBasedOnForageInc'  # this flag produces the divergence
-            #command +=  ' --forageDayNoTemp --hourlyTemperaturesEstimation --adultAgingBasedOnLaidEggs'  # matches win version
-        if self.verbose:
-            print("Weather file location: {} \n".format(self.weather_file))
-            print(command)
-        #subprocess.call(command, shell=True)
-        #os.chmod(self.exe, 509)
-        result = subprocess.run(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
-        if self.verbose:
-            print(result.returncode, result.stdout, result.stderr)
+        if selflib.RunSimulation():
+            self.a = 1
+            if self.verbose:
+                print('Simulation ran successfully')
+        else :
+            self.a = 2
+            if self.verbose:
+                print('Error in sumulation')
+        # Get results
+        theCount = ctypes.c_int(0)
+        p_Results = ctypes.POINTER(ctypes.c_char_p)()
+        if self.lib.GetResultsCPA(ctypes.byref(p_Results),ctypes.byref(theCount)):
+            # Store Reaults
+            self.n_result_lines = int(theCount.value)
+            if verbose:
+                print('Number lines of results: {}'.format(self.n_result_lines))
+            self.results = p_Results
+            self.lib.ClearResultsBuffer()
+            return self.results.decode('utf-8')
+        
+    def write_results(self, file):
+        results_file = file
+        if self.results is None:
+            raise Exception("There are no results to write. Please run the model first")
+        outfile = open(results_file, "w")
+        for j in range(0, self.n_result_lines -1): 
+            outfile.write(p_Results[j].decode("utf-8"))
+        outfile.close()
+        if self.verbose():
+            print('Wrote results to file')
+                      
+        
 
 
 
