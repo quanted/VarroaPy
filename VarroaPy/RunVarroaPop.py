@@ -6,14 +6,21 @@ code by Jeff Minucci
 
 import os
 import pandas as pd
-from .Tools import InputWriter, VPModelCaller, OutputReader
+from .Tools import InputWriter, VPModelCaller
 import json
 import uuid
+
+colnames = ["Date","Colony Size","Adult Drones","Adult Workers","Foragers", "Active Foragers", "Capped Drone Brood", "Capped Worker Brood",
+             "Drone Larvae", "Worker Larvae", "Drone Eggs", "Worker Eggs", "Total Eggs", "DD", "L", "N", "P", "dd", "l", "n", "Free Mites", "Drone Brood Mites",
+             "Worker Brood Mites", "Mites/Drone Cell", "Mites/Worker Cell", "Mites Dying", "Proportion Mites Dying",
+             "Colony Pollen (g)", "Pollen Pesticide Concentration", "Colony Nectar", "Nectar Pesticide Concentration",
+             "Dead Drone Larvae", "Dead Worker Larvae", "Dead Drone Adults", "Dead Worker Adults", "Dead Foragers",
+             "Queen Strength", "Average Temperature (celsius)", "Rain", "Min Temp", "Max Temp", "Daylight hours", "Forage Inc", "Forage Day"]
 
 class VarroaPop():
 
     def __init__(self, lib_file, parameters = None, input_file = None, weather_file = 'Columbus',
-                 logs = False, verbose = True, unique = True, keep_files = False,
+                 logs = False, verbose = True, unique = True, keep_files = False, debug=False,
                 new_features = False):
         '''
         Initialize a VarroaPop model object
@@ -29,6 +36,7 @@ class VarroaPop():
         :return: Nothing
         '''
         #check file paths
+        self.debug = debug
         self.parent = os.path.dirname(os.path.abspath(__file__))
         if lib_file is None:
             lib_file = os.path.join(self.parent, 'files/exe/liblibvpop.so')
@@ -56,13 +64,14 @@ class VarroaPop():
             if not isinstance(parameters, dict):
                 raise TypeError('parameters must be a named dictionary of VarroaPop parameters')
         self.weather_file = None
+        self.contam_file = None
         self.output = None
         self.input_file = None
-        self.vp = VPModelCaller(self.lib_file)
+        self.vp = VPModelCaller(self.lib_file, verbose=self.verbose)
         self.parameters = self.vp.set_parameters(parameters)
 
 
-    def set_parameters(self, parameters, weather_file = None):
+    def set_parameters(self, parameters=None, weather_file = None):
         '''
         Set or update the parameters (and optionally the weather file/option)
 
@@ -72,12 +81,15 @@ class VarroaPop():
 
         :return: Nothing
         '''
-        if not isinstance(parameters, dict):
+        if (parameters is not None) and (not isinstance(parameters, dict)):
             raise TypeError('parameters must be a named dictionary of VarroaPop parameters')
         self.parameters = self.vp.set_parameters(parameters)
         if weather_file is not None:
             self.weather_file = weather_file
             self.vp.load_weather(self.weather_file)
+    
+    def get_parameters(self):
+        return self.vp.get_parameters()
 
 
     def load_weather(self, weather_file):
@@ -95,6 +107,10 @@ class VarroaPop():
         self.input_file = input_file
         self.vp.load_input_file(self.input_file)
     
+    def load_contamination_file(self,file):
+        self.contam_file = file
+        self.vp.load_contam_file(self.contam_file)
+    
     def run_model(self):
         '''
         Run the VarroaPop model.
@@ -103,7 +119,7 @@ class VarroaPop():
         '''
 
         #check to see if parameters have been supplied
-        if self.parameters is None:
+        if (self.input_file is None) and (self.parameters is None):
             raise Exception('Parameters must be set before running VarroaPop!')
         if self.weather_file is None:
             raise Exception('Weather must be set before running VarroaPop!')
@@ -113,7 +129,7 @@ class VarroaPop():
         #writer.write_inputs()
 
         #run VarroaPop
-        output = self.run_VP()
+        self.output = self.vp.run_VP(debug=self.debug)
 
         #read the results
         #reader = OutputReader(out_path= self.out_path, out_filename= self.out_filename)
@@ -121,7 +137,7 @@ class VarroaPop():
         #self.output = output
         #if not self.keep_files:
         #    self.delete_files()
-        #return output
+        return self.output
 
 
     def get_output(self,json_str=False):
@@ -139,6 +155,10 @@ class VarroaPop():
 
     def get_jobID(self):
         return self.jobID
+    
+    def exit(self):
+        self.vp.close_library()
+        return
 
 
     def delete_files(self):

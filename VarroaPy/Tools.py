@@ -4,12 +4,18 @@
 # 8/7/18
 ##
 
-
-
 import os, sys
+import io
 import ctypes
 import subprocess
 import pandas as pd
+
+colnames = ["Date","Colony Size","Adult Drones","Adult Workers","Foragers", "Active Foragers", "Capped Drone Brood", "Capped Worker Brood",
+             "Drone Larvae", "Worker Larvae", "Drone Eggs", "Worker Eggs", "Total Eggs", "DD", "L", "N", "P", "dd", "l", "n", "Free Mites", "Drone Brood Mites",
+             "Worker Brood Mites", "Mites/Drone Cell", "Mites/Worker Cell", "Mites Dying", "Proportion Mites Dying",
+             "Colony Pollen (g)", "Pollen Pesticide Concentration", "Colony Nectar", "Nectar Pesticide Concentration",
+             "Dead Drone Larvae", "Dead Worker Larvae", "Dead Drone Adults", "Dead Worker Adults", "Dead Foragers",
+             "Queen Strength", "Average Temperature (celsius)", "Rain", "Min Temp", "Max Temp", "Daylight hours", "Forage Inc", "Forage Day"]
 
 def  StringList2CPA(theList):
     theListBytes = []
@@ -63,14 +69,6 @@ class VPModelCaller:
 
     Class to run the VarroaPop executable
 
-    param exe_file Full path to the VarroaPop.exe file (e.g. 'C:/VarroaPop/bin/VarroaPop.exe').
-    param vrp_file Full path to the .vrp file (e.g. 'C:/VarroaPop/bin/default.vrp').
-    param in_file Full path to the input file (e.g. 'C:/VarroaPop/input/myfile.txt').
-    param out_path Full path to the output folder, with trailing slash (e.g. 'C:/VarroaPop/output/).
-    param out_filename Optional: custom file name for the output file.
-    param weather_file: Full path to the weather file e.g. C:/VarroaPop/weather.wea (must be .wea/.dvf/.wth)
-    param verbose T/F, print extra details?
-
     """
 
     def __init__(self, lib_file, new_features=False, verbose = False):
@@ -79,7 +77,7 @@ class VPModelCaller:
         #self.input = in_file
         #self.output_path = out_path
         #self.out_filename = out_filename
-        self.parameters = []
+        self.parameters = dict()
         self.weather_file = None
         self.contam_file = None
         self.new_features = new_features
@@ -89,15 +87,6 @@ class VPModelCaller:
         self.parent = os.path.dirname(os.path.abspath(__file__))
         self.a = None
         weather_dir = os.path.join(self.parent,"files/weather")
-        self.weather_locs = {'columbus': os.path.join(weather_dir,'18815_grid_39.875_lat.wea'),
-                             'sacramento': os.path.join(weather_dir,'17482_grid_38.375_lat.wea'),
-                             'phoenix': os.path.join(weather_dir, '12564_grid_33.375_lat.wea'),
-                             'yakima': os.path.join(weather_dir, '25038_grid_46.375_lat.wea'),
-                             'eau claire': os.path.join(weather_dir, '23503_grid_44.875_lat.wea'),
-                             'jackson': os.path.join(weather_dir, '11708_grid_32.375_lat.wea'),
-                             'durham': os.path.join(weather_dir, '15057_grid_35.875_lat.wea')}
-        if self.weather_file.lower() in self.weather_locs.keys():
-            self.weather_file = self.weather_locs[self.weather_file.lower()]
         if self.lib.InitializeModel():  # Initialize model
             self.a = self.lib.InitializeModel()
             if self.verbose:
@@ -105,6 +94,7 @@ class VPModelCaller:
                 print('Model initialized')
         else:
             raise Exception('libvpop could not be initialized.')
+        self.clear_buffers()
     
     def clear_buffers(self):  
         if self.lib.ClearResultsBuffer():  # Clear Results and weather lists
@@ -117,13 +107,21 @@ class VPModelCaller:
                 print('Weather Cleared')
         else :
             raise Exception('Error Clearing Weather')
+        self.lib.ClearErrorList()
+        self.lib.ClearInfoList()
+        
     
     def load_input_file(self, in_file):
         self.input_file = in_file
         #Load the Initial Conditions
         icf = open(self.input_file)
-        inputlist = icf.readlines()
+        inputs = icf.readlines()
         icf.close()
+        input_d = dict(x.replace(" ","").replace("\n","").split("=") for x in inputs)
+        self.param_update(input_d)
+        inputlist = []
+        for k, v in self.parameters.items():
+            inputlist.append('{}={}'.format(k, v))
         CPA = (ctypes.c_char_p * len(inputlist))()
         inputlist_bytes = StringList2CPA(inputlist)
         CPA[:] = inputlist_bytes
@@ -132,22 +130,38 @@ class VPModelCaller:
                 print('Loaded parameters from file')
         else:
             raise Exception("Error loading parameters from file")
+        del CPA
+        del inputlist_bytes
+        return self.parameters
     
-    def set_parameters(self, parameters):
-        if parameters is None:
-            return None
-        self.parameters.update(parameters)
+    def param_update(self,parameters):
+        to_add = dict((k.lower(), v) for k, v in parameters.items())
+        self.parameters.update(to_add)
+    
+    def set_parameters(self, parameters=None):
+        refresh = False
+        if parameters is not None:
+            self.param_update(parameters)
+        else:
+            refresh = True
+            if self.parameters is None:
+                return
         inputlist = []
-        for k, v in self.parameters.items()
-            intputlist.append('{}={}'.format(k, v))
+        for k, v in self.parameters.items():
+            inputlist.append('{}={}'.format(k, v))
         CPA = (ctypes.c_char_p * len(inputlist))()
         inputlist_bytes = StringList2CPA(inputlist)
         CPA[:] = inputlist_bytes
         if self.lib.SetICVariablesCPA(CPA, len(inputlist)):
-            if self.verbose:
+            if self.verbose and not refresh:
                 print('Set parameters')
         else:
             raise Exception("Error setting parameters")
+        del CPA  # shouldn't be needed but trying to fix progressive slowdown issue
+        del inputlist_bytes
+        return self.parameters
+    
+    def get_parameters(self):
         return self.parameters
             
     def load_weather(self, weather_file='durham'):
@@ -162,7 +176,7 @@ class VPModelCaller:
                              'durham': os.path.join(weather_dir, '15057_grid_35.875_lat.wea')}
         if self.weather_file.lower() in self.weather_locs.keys():
             self.weather_file = self.weather_locs[self.weather_file.lower()]
-        wf = open(weatherpath)
+        wf = open(self.weather_file)
         weatherlines = wf.readlines()
         wf.close()
         CPA = (ctypes.c_char_p * len(weatherlines))()
@@ -173,6 +187,9 @@ class VPModelCaller:
                 print('Loaded Weather')
         else:
             raise Exception("Error Loading Weather")
+        self.set_parameters()
+        del CPA  # shouldn't be needed but trying to fix progressive slowdown issue
+        del weatherline_bytes
     
     def load_contam_file(self, contam_file):
         self.contam_file = contam_file
@@ -183,13 +200,15 @@ class VPModelCaller:
         contamlines_bytes = StringList2CPA(contamlines)
         CPA[:] = contamlines_bytes
         if self.lib.SetContaminationTableCPA(CPA, len(contamlines)):
-            if verbose:
+            if self.verbose:
                 print('Loaded contamination file')
         else:
             raise Exception("Error loading contamination file")
+        del CPA  # shouldn't be needed but trying to fix progressive slowdown issue
+        del contamlines_bytes
 
-    def run_VP(self):
-        if selflib.RunSimulation():
+    def run_VP(self, debug=False):
+        if self.lib.RunSimulation():
             self.a = 1
             if self.verbose:
                 print('Simulation ran successfully')
@@ -197,57 +216,69 @@ class VPModelCaller:
             self.a = 2
             if self.verbose:
                 print('Error in sumulation')
+        if debug:
+            self.clear_buffers()
+            return None
         # Get results
         theCount = ctypes.c_int(0)
+        #p_Results = ctypes.POINTER(ctypes.c_char_p)
         p_Results = ctypes.POINTER(ctypes.c_char_p)()
         if self.lib.GetResultsCPA(ctypes.byref(p_Results),ctypes.byref(theCount)):
             # Store Reaults
-            self.n_result_lines = int(theCount.value)
-            if verbose:
-                print('Number lines of results: {}'.format(self.n_result_lines))
-            self.results = p_Results
+            n_result_lines = int(theCount.value)
             self.lib.ClearResultsBuffer()
-            return self.results.decode('utf-8')
+            out_lines = []
+            for j in range(0, n_result_lines-1): 
+                out_lines.append(p_Results[j].decode('utf-8'))
+            out_str = io.StringIO('\n'.join(out_lines))
+            out_df = pd.read_csv(out_str, delim_whitespace=True, skiprows=3, names = colnames, dtype={'Date': str})
+            self.results = out_df
+        self.clear_buffers()
+        del theCount  # shouldn't be needed but trying to fix progressive slowdown issue
+        del p_Results
+        return self.results
         
     def write_results(self, file):
         results_file = file
         if self.results is None:
             raise Exception("There are no results to write. Please run the model first")
-        outfile = open(results_file, "w")
-        for j in range(0, self.n_result_lines -1): 
-            outfile.write(p_Results[j].decode("utf-8"))
-        outfile.close()
+        self.results.to_csv(results_file, index=False)
+        #outfile = open(results_file, "w")
+        #for j in range(0, self.n_result_lines -1): 
+            #outfile.write(p_Results[j].decode("utf-8"))
+        #outfile.close()
         if self.verbose():
             print('Wrote results to file')
-                      
-        
-
-
-
-class OutputReader:
-    '''
-    Class to read results from a VarroaPop run output text file
-
-    param out_path Directory to look for results files in (e.g. C:/VarroaPop/output/)
-    param out_filename Name of the VarroaPop results file to read (e.g. "myresults.txt")
-    '''
-
-    def __init__(self, out_path, out_filename = 'vp_results.txt'):
-        self.outvar =["Date","Colony Size","Adult Drones","Adult Workers","Foragers", "Active Foragers", "Capped Drone Brood", "Capped Worker Brood",
-             "Drone Larvae", "Worker Larvae", "Drone Eggs", "Worker Eggs", "Total Eggs", "DD", "L", "N", "P", "dd", "l", "n", "Free Mites", "Drone Brood Mites",
-             "Worker Brood Mites", "Mites/Drone Cell", "Mites/Worker Cell", "Mites Dying", "Proportion Mites Dying",
-             "Colony Pollen (g)", "Pollen Pesticide Concentration", "Colony Nectar", "Nectar Pesticide Concentration",
-             "Dead Drone Larvae", "Dead Worker Larvae", "Dead Drone Adults", "Dead Worker Adults", "Dead Foragers",
-             "Queen Strength", "Average Temperature (celsius)", "Rain", "Min Temp", "Max Temp", "Daylight hours", "Forage Inc", "Forage Day"]
-        self.out_path = out_path
-        self.out_filename = out_filename
-        self.out = os.path.join(self.out_path, self.out_filename)
-
-    def read(self):
-        """
-        Read the VarroaPop output file and return it as a pandas dataframe
-
-        :return: a pandas dataframe of VP outputs (columns) by simulation date (rows)
-        """
-        df = pd.read_csv(self.out, delim_whitespace = True, header = None, names = self.outvar, skiprows = 6, index_col=0)
-        return df
+            
+    def write_errors_info(self):
+        # Get Info and Errors
+        p_Errors = ctypes.POINTER(ctypes.c_char_p)()
+        NumErrors = ctypes.c_int(0)
+        errorpath = os.path.abspath('./errors.txt')
+        infopath = os.path.abspath('./info.txt')
+        if self.lib.GetErrorListCPA(ctypes.byref(p_Errors), ctypes.byref(NumErrors)):
+            # Get Errors
+            max = int(NumErrors.value)
+            outfile = open(errorpath, "w")
+            for j in range(0,max-1):
+                outfile.write(p_Errors[j].decode("utf-8"))
+            outfile.close()
+            if self.verbose and (max > 0):
+                print('Wrote errors to {}'.format(errorpath))
+            self.lib.ClearErrorList()
+        p_Info = ctypes.POINTER(ctypes.c_char_p)()
+        NumInfo = ctypes.c_int(0)
+        if self.lib.GetInfoListCPA(ctypes.byref(p_Info), ctypes.byref(NumInfo)):
+            # Get Info
+            max = int(NumInfo.value)
+            outfile = open(infopath, "w")
+            for j in range(0,max-1) :
+                outfile.write(p_Info[j].decode("utf-8"))
+            outfile.close()
+            if self.verbose and (max > 0):
+                print('Wrote info list to {}'.format(infopath))
+            self.lib.ClearInfoList()
+            
+    def close_library(self):
+        del self.lib
+        self.lib = None
