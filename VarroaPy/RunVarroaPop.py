@@ -158,6 +158,7 @@ class VarroaPop():
     
     def exit(self):
         self.vp.close_library()
+        del self.vp
         return
 
 

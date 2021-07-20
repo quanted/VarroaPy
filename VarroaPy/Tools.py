@@ -107,10 +107,17 @@ class VPModelCaller:
                 print('Weather Cleared')
         else :
             raise Exception('Error Clearing Weather')
-        self.lib.ClearErrorList()
-        self.lib.ClearInfoList()
+        if self.lib.ClearErrorList():
+            if self.verbose:
+                    print('Error list cleared')
+        else :
+                raise Exception('Error clearing error list')
+        if self.lib.ClearInfoList():
+            if self.verbose:
+                    print('Info Cleared')
+        else :
+                raise Exception('Error clearing info')
         
-    
     def load_input_file(self, in_file):
         self.input_file = in_file
         #Load the Initial Conditions
@@ -280,5 +287,11 @@ class VPModelCaller:
             self.lib.ClearInfoList()
             
     def close_library(self):
+        #del self.lib
+        dlclose_func = ctypes.CDLL(None).dlclose
+        dlclose_func.argtypes = [ctypes.c_void_p]
+        handle = self.lib._handle
         del self.lib
+        #print('dlclose returned {:d}'.format(dlclose_func(handle)))
+        #print(self.lib)
         self.lib = None
