@@ -41,7 +41,7 @@ class VarroaPop():
         if lib_file is None:
             lib_file = os.path.join(self.parent, 'files/exe/liblibvpop.so')
         if not os.path.isfile(lib_file):
-            raise FileNotFoundError('VarroaPop shared object library does not exist at path: {}!'.format(lib))
+            raise FileNotFoundError('VarroaPop shared object library does not exist at path: {}!'.format(lib_file))
         self.lib_file = lib_file
         self.unique = unique
         self.keep_files = keep_files

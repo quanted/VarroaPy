@@ -16,38 +16,56 @@ params = {"ICWorkerAdults": 18000, "ICWorkerBrood": 8000, "SimStart": START_DATE
 weather = os.path.abspath('test_data/15055_grid_35.875_lat.txt')
 input_file = os.path.abspath('test_data/InputFileFromFeeding_Study_2.txt')
 pesticide_file = os.path.abspath('test_data/NutrientContaminationFile.txt')
-lib_file = os.path.abspath('liblibvpop.so')
+lib_file = os.path.abspath('liblibvpop_new2.so')
 vp = VarroaPop(lib_file, logs=True, keep_files=True, debug=False, verbose=False)
 vp.load_weather(weather)
 vp.load_input_file(input_file)
 vp.set_parameters(params)
 
-start = timer()
-for i in range(500):
-    vp.run_model()
-end = timer()
-print(end - start)
+max_mem = resource.getrusage(resource.RUSAGE_THREAD).ru_maxrss
+print('Thread memory usage max: {} bytes'.format(max_mem))
 
 start = timer()
 for i in range(500):
     vp.run_model()
 end = timer()
-print(end - start)
+print('Time elapsed for 500 simulations: {:.3f} seconds'.format(end - start))
+
+max_mem = resource.getrusage(resource.RUSAGE_THREAD).ru_maxrss
+print('Thread memory usage max: {} bytes'.format(max_mem))
 
 start = timer()
 for i in range(500):
     vp.run_model()
 end = timer()
-print(end - start)
+print('Time elapsed for 500 simulations: {:.3f} seconds'.format(end - start))
+
+max_mem = resource.getrusage(resource.RUSAGE_THREAD).ru_maxrss
+print('Thread memory usage max: {} bytes'.format(max_mem))
 
 start = timer()
 for i in range(500):
     vp.run_model()
 end = timer()
-print(end - start)
+print('Time elapsed for 500 simulations: {:.3f} seconds'.format(end - start))
 
+max_mem = resource.getrusage(resource.RUSAGE_THREAD).ru_maxrss
+print('Thread memory usage max: {} bytes'.format(max_mem))
+      
 start = timer()
 for i in range(500):
     vp.run_model()
 end = timer()
-print(end - start)
+print('Time elapsed for 500 simulations: {:.3f} seconds'.format(end - start))
+
+max_mem = resource.getrusage(resource.RUSAGE_THREAD).ru_maxrss
+print('Thread memory usage max: {} bytes'.format(max_mem))
+      
+start = timer()
+for i in range(500):
+    vp.run_model()
+end = timer()
+print('Time elapsed for 500 simulations: {:.3f} seconds'.format(end - start))
+
+max_mem = resource.getrusage(resource.RUSAGE_THREAD).ru_maxrss
+print('Thread memory usage max: {} bytes'.format(max_mem))
