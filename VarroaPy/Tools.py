@@ -1,7 +1,7 @@
 ##
-# VarroaPop Wrapper Tools for Python
+# VarroaPop Wrapper Tools for Python - linux version
 # code by Jeff Minucci
-# 8/7/18
+# 5/2022
 ##
 
 import os, sys
@@ -23,45 +23,6 @@ def  StringList2CPA(theList):
         theListBytes.append(bytes(theList[i], 'utf-8'))
     return theListBytes
 
-class InputWriter:
-    """
-    Class to write a VarroaPop input file
-
-    Takes a named dictionary of VarroaPop input parameters. Also requires the path to where you want to write the file.
-    """
-
-    def __init__(self, params, in_path = os.path.join(os.path.abspath(__file__),"files/input"), in_filename = 'vp_input.txt',
-                verbose = False):
-        """
-        Creates an InputWriter object. Takes params, a named dictionary of VarroaPop inputs.
-
-        @param params Named vector of VarroaPop inputs to be written to .txt file.
-        @param in_path Directory to write vp_input.txt file to (optional).
-        @param in_filename Filename of the written input file. Defaults to 'vp_input.txt'.
-        @param weather_file Full path to the weather file e.g. C:/VarroaPop/weather.wea (must be .wea/.dvf/.wth) OR
-            one of either 'Columbus' (default), 'Sacramento', 'Phoenix', 'Yakima', 'Eau Claire', 'Jackson', or 'Durham'
-        @param verbose T/F print extra details?
-        """
-        self.params = params
-        self.path = in_path
-        self.filename = in_filename
-        self.verbose = verbose
-
-
-    def write_inputs(self):
-        """
-        Function to create a single input file from the set of parameters in the form of
-        a named dictionary.
-        """
-        if self.verbose:
-            print("Printing input file to: {}".format(self.path))
-            #print("Weather file location: {}".format(self.weather_file))
-        inputs = ['{}={}'.format(key, value) for key, value in self.params.items()]
-        with open(os.path.join(self.path,self.filename), 'w') as file:
-            for x in inputs:
-                file.write('{}\n'.format(x))
-
-
 
 class VPModelCaller:
     """
@@ -72,11 +33,6 @@ class VPModelCaller:
     """
 
     def __init__(self, lib_file, new_features=False, verbose = False):
-        #self.exe = exe_file
-        #self.vrp = vrp_file
-        #self.input = in_file
-        #self.output_path = out_path
-        #self.out_filename = out_filename
         self.parameters = dict()
         self.weather_file = None
         self.contam_file = None
@@ -102,11 +58,11 @@ class VPModelCaller:
                 print('Results buffer cleared')
         else :
              raise Exception('Error clearing results buffer.')
-        if self.lib.ClearWeather():  # Clear weather
-            if self.verbose:
-                print('Weather Cleared')
-        else :
-            raise Exception('Error Clearing Weather')
+        #if self.lib.ClearWeather():  # Clear weather
+        #    if self.verbose:
+        #        print('Weather Cleared')
+        #else :
+        #    raise Exception('Error Clearing Weather')
         if self.lib.ClearErrorList():
             if self.verbose:
                     print('Error list cleared')
@@ -117,10 +73,10 @@ class VPModelCaller:
                     print('Info Cleared')
         else :
                 raise Exception('Error clearing info')
-        
-    def load_input_file(self, in_file):
+     
+    #Load parameters from a file
+    def load_input_file(self, in_file):   
         self.input_file = in_file
-        #Load the Initial Conditions
         icf = open(self.input_file)
         inputs = icf.readlines()
         icf.close()
@@ -141,18 +97,21 @@ class VPModelCaller:
         del inputlist_bytes
         return self.parameters
     
+    # update the dictionary of parameters
     def param_update(self,parameters):
         to_add = dict((k.lower(), v) for k, v in parameters.items())
         self.parameters.update(to_add)
     
+    # set parameters based on a python dictionary
     def set_parameters(self, parameters=None):
         refresh = False
         if parameters is not None:
             self.param_update(parameters)
         else:
             refresh = True
-            if self.parameters is None:
+            if len(self.parameters) < 1:
                 return
+        print('Doing SetICVariablesCPA')
         inputlist = []
         for k, v in self.parameters.items():
             inputlist.append('{}={}'.format(k, v))
@@ -164,7 +123,7 @@ class VPModelCaller:
                 print('Set parameters')
         else:
             raise Exception("Error setting parameters")
-        del CPA  # shouldn't be needed but trying to fix progressive slowdown issue
+        del CPA  # shouldn't be needed 
         del inputlist_bytes
         return self.parameters
     
@@ -194,8 +153,8 @@ class VPModelCaller:
                 print('Loaded Weather')
         else:
             raise Exception("Error Loading Weather")
-        self.set_parameters()
-        del CPA  # shouldn't be needed but trying to fix progressive slowdown issue
+        #self.set_parameters()
+        del CPA  # shouldn't be needed
         del weatherline_bytes
     
     def load_contam_file(self, contam_file):
@@ -211,14 +170,12 @@ class VPModelCaller:
                 print('Loaded contamination file')
         else:
             raise Exception("Error loading contamination file")
-        del CPA  # shouldn't be needed but trying to fix progressive slowdown issue
+        del CPA  # shouldn't be needed
         del contamlines_bytes
 
     def run_VP(self, debug=False):
         if self.lib.RunSimulation():
             self.a = 1
-            if self.verbose:
-                print('Simulation ran successfully')
         else :
             self.a = 2
             if self.verbose:
@@ -228,7 +185,6 @@ class VPModelCaller:
             return None
         # Get results
         theCount = ctypes.c_int(0)
-        #p_Results = ctypes.POINTER(ctypes.c_char_p)
         p_Results = ctypes.POINTER(ctypes.c_char_p)()
         if self.lib.GetResultsCPA(ctypes.byref(p_Results),ctypes.byref(theCount)):
             # Store Reaults
@@ -240,20 +196,18 @@ class VPModelCaller:
             out_str = io.StringIO('\n'.join(out_lines))
             out_df = pd.read_csv(out_str, delim_whitespace=True, skiprows=3, names = colnames, dtype={'Date': str})
             self.results = out_df
+        else:
+            print('Error getting results')
         self.clear_buffers()
         del theCount  # shouldn't be needed but trying to fix progressive slowdown issue
         del p_Results
         return self.results
         
-    def write_results(self, file):
-        results_file = file
+    def write_results(self, file_path):
+        results_file = file_path
         if self.results is None:
             raise Exception("There are no results to write. Please run the model first")
         self.results.to_csv(results_file, index=False)
-        #outfile = open(results_file, "w")
-        #for j in range(0, self.n_result_lines -1): 
-            #outfile.write(p_Results[j].decode("utf-8"))
-        #outfile.close()
         if self.verbose():
             print('Wrote results to file')
             
@@ -261,8 +215,8 @@ class VPModelCaller:
         # Get Info and Errors
         p_Errors = ctypes.POINTER(ctypes.c_char_p)()
         NumErrors = ctypes.c_int(0)
-        errorpath = os.path.abspath('./errors.txt')
-        infopath = os.path.abspath('./info.txt')
+        errorpath = os.path.join(self.parent,"files/logs/errors.txt")
+        infopath = os.path.join(self.parent,"files/logs/info.txt")
         if self.lib.GetErrorListCPA(ctypes.byref(p_Errors), ctypes.byref(NumErrors)):
             # Get Errors
             max = int(NumErrors.value)
@@ -292,6 +246,4 @@ class VPModelCaller:
         dlclose_func.argtypes = [ctypes.c_void_p]
         handle = self.lib._handle
         del self.lib
-        #print('dlclose returned {:d}'.format(dlclose_func(handle)))
-        #print(self.lib)
         self.lib = None

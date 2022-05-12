@@ -1,6 +1,9 @@
+vp_test.py
+varroapy_test.ipynb
 core.*
 errors.txt
 info.txt
+test_data
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

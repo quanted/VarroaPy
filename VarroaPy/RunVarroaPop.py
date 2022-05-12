@@ -6,7 +6,7 @@ code by Jeff Minucci
 
 import os
 import pandas as pd
-from .Tools import InputWriter, VPModelCaller
+from .Tools import VPModelCaller
 import json
 import uuid
 
@@ -120,33 +120,23 @@ class VarroaPop():
 
         #check to see if parameters have been supplied
         if (self.input_file is None) and (self.parameters is None):
-            raise Exception('Parameters must be set before running VarroaPop!')
+            pass
+            #raise Exception('Parameters must be set before running VarroaPop!')
         if self.weather_file is None:
             raise Exception('Weather must be set before running VarroaPop!')
-        #write the inputs
-        #writer = InputWriter(params = self.parameters, in_path =  self.in_path, in_filename= self.in_filename,
-        #                     verbose = self.verbose)
-        #writer.write_inputs()
 
-        #run VarroaPop
         self.output = self.vp.run_VP(debug=self.debug)
 
-        #read the results
-        #reader = OutputReader(out_path= self.out_path, out_filename= self.out_filename)
-        #output = reader.read()
-        #self.output = output
-        #if not self.keep_files:
-        #    self.delete_files()
         return self.output
 
 
-    def get_output(self,json_str=False):
+    def get_output(self,format='dataframe'):
         '''
 
-        :param jsonify: return the output as a json string?
+        :param format: if 'dataframe', return pandas DataFrame object. If 'json', return json string.
         :return: either a json string or a dataframe of the VarroaPop model output
         '''
-        if json_str:
+        if format == 'json':
             result = json.dumps(self.output.to_dict(orient='list'))
         else:
             result = self.output
@@ -160,7 +150,6 @@ class VarroaPop():
         self.vp.close_library()
         del self.vp
         return
-
 
     def delete_files(self):
         input = os.path.join(self.in_path, self.in_filename)
