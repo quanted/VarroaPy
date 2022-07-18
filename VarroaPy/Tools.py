@@ -192,7 +192,7 @@ class VPModelCaller:
             self.lib.ClearResultsBuffer()
             out_lines = []
             for j in range(0, n_result_lines-1): 
-                out_lines.append(p_Results[j].decode('utf-8'))
+                out_lines.append(str(p_Results[j]))
             out_str = io.StringIO('\n'.join(out_lines))
             out_df = pd.read_csv(out_str, delim_whitespace=True, skiprows=3, names = colnames, dtype={'Date': str})
             self.results = out_df
@@ -222,7 +222,7 @@ class VPModelCaller:
             max = int(NumErrors.value)
             outfile = open(errorpath, "w")
             for j in range(0,max-1):
-                outfile.write(p_Errors[j].decode("utf-8"))
+                outfile.write(str(p_Errors[j]))
             outfile.close()
             if self.verbose and (max > 0):
                 print('Wrote errors to {}'.format(errorpath))
@@ -234,7 +234,7 @@ class VPModelCaller:
             max = int(NumInfo.value)
             outfile = open(infopath, "w")
             for j in range(0,max-1) :
-                outfile.write(p_Info[j].decode("utf-8"))
+                outfile.write(str(p_Info[j]))
             outfile.close()
             if self.verbose and (max > 0):
                 print('Wrote info list to {}'.format(infopath))
