@@ -111,7 +111,6 @@ class VPModelCaller:
             refresh = True
             if len(self.parameters) < 1:
                 return
-        print('Doing SetICVariablesCPA')
         inputlist = []
         for k, v in self.parameters.items():
             inputlist.append('{}={}'.format(k, v))

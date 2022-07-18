@@ -20,7 +20,7 @@ colnames = ["Date","Colony Size","Adult Drones","Adult Workers","Foragers", "Act
 class VarroaPop():
 
     def __init__(self, lib_file, parameters = None, input_file = None, weather_file = 'Columbus',
-                 logs = False, verbose = True, unique = True, keep_files = False, debug=False,
+                 logs = False, verbose = False, unique = True, keep_files = False, debug=False,
                 new_features = False):
         '''
         Initialize a VarroaPop model object
