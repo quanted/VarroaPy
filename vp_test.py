@@ -14,9 +14,10 @@ END_DATE = '10/10/2014'
 params = {"ICWorkerAdults": 18000, "ICWorkerBrood": 8000, "SimStart": START_DATE, "SimEnd": END_DATE,
         'IPollenTrips': 8, 'INectarTrips': 17, 'RQEnableReQueen': 'false'}
 weather = os.path.abspath('test_data/15055_grid_35.875_lat.txt')
+print(weather)
 input_file = os.path.abspath('test_data/InputFileFromFeeding_Study_2.txt')
 pesticide_file = os.path.abspath('test_data/NutrientContaminationFile.txt')
-lib_file = os.path.abspath('liblibvpop_newest.so')
+lib_file = os.path.abspath('liblibvpop_7_22.so')
 vp = VarroaPop(lib_file, logs=True, keep_files=True, debug=False, verbose=False)
 vp.load_weather(weather)
 vp.load_input_file(input_file)

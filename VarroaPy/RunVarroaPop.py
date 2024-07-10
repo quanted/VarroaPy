@@ -141,7 +141,11 @@ class VarroaPop():
         else:
             result = self.output
         return result
-
+    
+    def version(self):
+        version = self.vp.get_version()
+        print(version)
+        return version
 
     def get_jobID(self):
         return self.jobID
